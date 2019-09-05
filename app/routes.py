@@ -57,14 +57,31 @@ def cart():
 @app.route('/add/<int:id>')
 def add(id):
   p = Product.query.get(id)
-  # Add item to session
   if 'cart' not in session:
-    session['cart'] = list()
+    session['cart'] = []
   cart = session['cart']
-  cart.append(dict(id=p.id, name=p.name, image=p.image, price=p.price))
+  cart.append(
+    {
+      "id": p.id,
+      "name": p.name,
+      "price": p.price,
+      "image": p.image
+    }
+  )
   session['cart'] = cart
   return redirect(url_for('index'))
 
+@app.route('/remove/<int:id>')
+def remove(id):
+  p = Product.query.get(id)
+  cart = session['cart']
+  # print([i['name'] for i in cart])
+  for i in cart:
+    if p.name in i['name']:
+      cart.remove(i)
+      break
+  session['cart'] = cart
+  return redirect(url_for('cart'))
 
 @app.route('/charge', methods=['POST'])
 def charge():

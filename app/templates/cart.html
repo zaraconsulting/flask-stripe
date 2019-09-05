@@ -26,9 +26,12 @@
           <h6><strong>${{ p.price }} <span class="text-muted">x </span>{{ cart.count(p) }}</strong></h6>
         </div>
         <div class="col-2 col-sm-2 col-md-2 text-right">
-          <button type="button" class="btn btn-outline-danger btn-xs">
+          <a href="/remove/{{ p.id }}" class="btn btn-outline-danger btn-xs">
             <i class="fa fa-trash" aria-hidden="true"></i>
-          </button>
+          </a>
+          <!-- <button type="button" class="btn btn-outline-danger btn-xs">
+            <i class="fa fa-trash" aria-hidden="true"></i>
+          </button> -->
         </div>
       </div>
     </div>
