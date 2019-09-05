@@ -19,5 +19,11 @@
         </li>
       {% endfor %}
     </ul>
+    <ul class="navbar-nav m1-auto">
+      <li class="nav-item">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="badge badge-dark">{{ cartSession|length }}</span>
+      </li>
+    </ul>
   </div>
 </nav>
