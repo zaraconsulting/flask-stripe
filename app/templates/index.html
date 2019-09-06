@@ -2,7 +2,7 @@
 {% set active_page = 'index' %}
 
 {% block content %}
-<h5>This is the homepage</h5>
+<h4>This is the homepage</h4>
 <hr>
 <div class="row">
   {% for p in products %}
@@ -13,7 +13,7 @@
         <div class="card-body">
           <h4 class="card-title">{{ p.name }}</h4>
           <p class="card-text">${{ p.price }}</p>
-          <a href="/add/{{ p.id }}" class="btn btn-block btn-outline-dark">Add to Cart</a>
+          <a href="/shop/add/{{ p.id }}" class="btn btn-block btn-outline-dark">Add to Cart</a>
         </div>
       </div>
     </div>

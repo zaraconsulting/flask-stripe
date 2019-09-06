@@ -10,4 +10,7 @@ db = SQLAlchemy(app)
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
+from app.blueprints.shop import shop
+app.register_blueprint(shop, url_prefix='/shop')
+
 from app import routes, models
