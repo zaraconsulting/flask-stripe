@@ -19,4 +19,7 @@ mail = Mail(app)
 from app.blueprints.shop import shop
 app.register_blueprint(shop, url_prefix='/shop')
 
-from app import routes, models
+from app.blueprints.errors import errors
+app.register_blueprint(errors)
+
+from app import routes, models, errors
