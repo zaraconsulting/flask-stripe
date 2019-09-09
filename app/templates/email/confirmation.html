@@ -6,7 +6,24 @@
 <p>Sales Tax: $X.XX</p> -->
 <p><strong>Order #: {{ order_no }}</strong></p>
 <p>Service: {{ description }}</p>
-<p><strong>Total: ${{ amount }}</strong></p>
+<p>
+  {% for p in products %}
+    <div>
+      {{ p.name }}
+      <span style="float:right">${{ p.price }} x{{ cart.count(p) }}</span>
+      <!-- <cite>
+        {{ p.prod_id }}
+      </cite> -->
+    </div>
+    {% endfor %}
+    <hr>
+  </p>
+<p>
+  <div>
+    Total
+    <span style="float:right"><strong>Total: ${{ amount }}</strong></span>
+  </div>
+</p>
 
 <br>
 

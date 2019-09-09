@@ -49,6 +49,8 @@ def add(id):
   cart.append(
     {
       'id': p.id,
+      'prod_id': p.prod_id,
+      'sku': p.sku,
       'name': p.name,
       'price': p.price,
       'image': p.image
@@ -76,18 +78,29 @@ def charge():
       source=request.json['token']
     )
     amount = int(sum([i['price'] for i in session['cart']])*100)
+    
+    products = list()
+    productDict = dict()
+    for i in session['cart']:
+      if i not in products:
+        products.append(i)
+        productDict[i['prod_id']] = f"Name: {i['name']}; Quantity: {session['cart'].count(i)};"
     charge = stripe.Charge.create(
       customer=customer.id,
       amount=request.json['amount'],
       currency='usd',
-      description=request.json['description']
+      description=request.json['description'],
+      metadata=productDict
     )
+
     customerInfo = dict(
       id=customer.id,
       email=customer.email,
-      amount=amount/100,
+      amount=f'{amount/100:.2f}',
       description=charge.description,
-      order_no=charge.id
+      order_no=charge.id,
+      cart=session['cart'],
+      products=products
     )
     # print(f'Customer: {customer}')
     # print(f'Charge: {charge}')
