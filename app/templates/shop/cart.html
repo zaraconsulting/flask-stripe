@@ -16,7 +16,11 @@
   </div>
   <hr id="alert-border">
 </div>
-<h4>This is the cart page</h4>
+<h4>This is the cart page
+  <span class="float-right">
+    <a href="{{ url_for('shop.clear') }}" class="btn btn-outline-danger">Clear cart</a>
+  </span>
+</h4>
 <hr>
 {% if cart|length == 0 %}
   <h4>There are no items in the cart.</h4>

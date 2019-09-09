@@ -93,3 +93,8 @@ def charge():
 @shop.route('/thankyou')
 def thankyou():
   return render_template('shop/checkout.html')
+
+@shop.route('/clear')
+def clear():
+  session.clear()
+  return redirect(url_for('shop.index'))
