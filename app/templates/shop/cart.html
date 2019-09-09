@@ -8,8 +8,13 @@
 
 {% block content %}
 <div id="status">
-  <div class="alert alert-primary" id="alert" role="alert"></div>
-  <hr>
+  <div class="alert alert-primary alert-dismissible fade show" role="alert">
+    <button id="close-button" type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <div class="alert-message"></div> 
+  </div>
+  <hr id="alert-border">
 </div>
 <h4>This is the cart page</h4>
 <hr>
@@ -54,14 +59,16 @@
           <input type="text" class="form-control" placeholder="Coupon code">
         </div>
         <div class="col-6">
-          <input type="submit" class="btn btn-default" value="Use Coupon">
+          <input type="submit" class="btn btn-outline-dark" value="Use Coupon">
         </div>
       </div>
-    </div>
-    <div class="pull-right" style="margin: 10px">
-      <button id="checkout-button" type="button" class="btn btn-success pull-right">Checkout</button>
-      <div class="pull-right" style="margin: 5px">
-        Total price: <b>{{ "${:,.2f}".format(cartTotal) }}</b>
+      <div class="row">
+        <div class="col-md-6">
+          <button id="checkout-button" type="button" class="btn btn-success" style="margin: 10px 0">Checkout</button>
+          <div style="margin: 5px 0">
+            Total price: <b>{{ "${:,.2f}".format(cartTotal) }}</b>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -71,13 +78,18 @@
 {% block scripts %}
   {{ super() }}
   <script src="https://checkout.stripe.com/checkout.js"></script>
+  <script src="https://js.stripe.com/v3"></script>
   <script>
+    var stripe = Stripe('{{ key }}');
+    var cartSession = '{{ cartSession }}'
+    // console.log(cartSession)
+
     var handler = StripeCheckout.configure({
       key: "{{ key }}",
       image: "{{ url_for('static', filename='images/4.png') }}",
       locale: "auto",
       token: token => {
-        fetch("/charge", {
+        fetch("/shop/charge", {
           method: "POST",
           headers: { "Content-Type": "application/json", },
           body: JSON.stringify({
@@ -97,18 +109,26 @@
         })
         .then(data => {
           sessionStorage.removeItem('cart');
-          location.reload(forceGet=true);
-          $('#alert').text('Thanks for purchasing!');
-          $('#status').css('display', 'inline');
+          window.location.href = "/shop/thankyou";
+          // $('.alert-message').text('Thanks for purchasing!');
+          // $('#status').css('display', 'inline');
         })
         .catch(err => {
-          $('#alert').text('Something went wrong.');
+          $('.alert-message').text('Something went wrong.');
           $('#status').css('display', 'inline');
         })
       }
     });
 
     $('#checkout-button').on('click', (e) => {
+      
+      // stripe.redirectToCheckout({
+        
+        // items: [{
+        //   sku: '',
+        //   quantity: 
+        // }]
+      // })
       handler.open({
         name: "Zara Consulting, Inc.",
         description: "Goods & Services",

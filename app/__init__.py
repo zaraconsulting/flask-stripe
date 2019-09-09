@@ -10,6 +10,12 @@ db = SQLAlchemy(app)
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
+from flask_admin import Admin
+admin = Admin(app)
+
+from flask_mail import Mail
+mail = Mail(app)
+
 from app.blueprints.shop import shop
 app.register_blueprint(shop, url_prefix='/shop')
 

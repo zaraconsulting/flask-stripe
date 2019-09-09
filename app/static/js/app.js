@@ -1,0 +1,1 @@
+$('#close-button').on('click', () => $('#alert-border').css('display', 'none'));

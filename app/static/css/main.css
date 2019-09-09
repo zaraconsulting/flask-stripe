@@ -5,3 +5,20 @@ nav {
 #status {
   display: none;
 }
+
+#email .small {
+  color: lightgray;
+}
+
+.items {
+  border-top: 1px dashed #aaaaaa;
+  border-bottom: 1px dashed #aaaaaa;
+}
+
+#email .total {
+  border-top: 1px solid #eaeaea;
+}
+
+.items .total span {
+  color: #7ca236;
+}

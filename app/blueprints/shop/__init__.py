@@ -1,6 +1,7 @@
 from app import app
 from flask import render_template, redirect, url_for, session, request, jsonify, Blueprint
 from app.models import Product
+from app.email import send_email
 import json, stripe, os
 from collections import Counter
 
@@ -35,7 +36,8 @@ def index():
     'cart': session['cart'],
     'cartTotal': sum_,
     'key': os.getenv('STRIPE_TEST_PUB'),
-    'amount': int(sum([i['price'] for i in session['cart']])*100)
+    'amount': int(sum([i['price'] for i in session['cart']])*100),
+    'jsonCart': [json.dumps(i) for i in session['cart']]
   }
   return render_template('shop/cart.html', **c)
 
@@ -47,10 +49,10 @@ def add(id):
   cart = session['cart']
   cart.append(
     {
-      "id": p.id,
-      "name": p.name,
-      "price": p.price,
-      "image": p.image
+      'id': p.id,
+      'name': p.name,
+      'price': p.price,
+      'image': p.image
     }
   )
   session['cart'] = cart
@@ -82,6 +84,12 @@ def charge():
       description=request.json['description']
     )
     session.clear()
+    # send email
+    send_email()
     return jsonify({'success': 'success!'})
   except stripe.error.StripeError:
     return jsonify({'status': 'error'}), 500
+
+@shop.route('/thankyou')
+def thankyou():
+  return render_template('shop/checkout.html')
