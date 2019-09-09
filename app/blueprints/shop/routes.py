@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, session, request, jsonify, current_app
 from app.models import Product
-from app.email import send_email
+from app.blueprints.shop.email import send_email
 import json, stripe, os
 from collections import Counter
 from app.blueprints.shop import shop

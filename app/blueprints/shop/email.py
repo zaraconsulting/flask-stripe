@@ -13,7 +13,7 @@ def send_email(customer):
   msg['to'] = recipient
   msg['reply-to'] = "noreply@zaraconsulting.org"
 
-  html = MIMEText(render_template('/email/confirmation.html', **customer), 'html')
+  html = MIMEText(render_template('email/confirmation.html', **customer), 'html')
   msg.attach(html)
   server = smtplib.SMTP(current_app.config.get('MAIL_SERVER'), current_app.config.get('MAIL_PORT'))
   server.ehlo()
