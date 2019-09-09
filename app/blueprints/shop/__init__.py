@@ -83,9 +83,17 @@ def charge():
       currency='usd',
       description=request.json['description']
     )
+    customerInfo = dict(
+      id=customer.id,
+      email=customer.email,
+      amount=amount/100,
+      description=charge.description,
+      order_no=charge.id
+    )
+    # print(f'Customer: {customer}')
+    # print(f'Charge: {charge}')
+    send_email(customerInfo)
     session.clear()
-    # send email
-    send_email()
     return jsonify({'success': 'success!'})
   except stripe.error.StripeError:
     return jsonify({'status': 'error'}), 500
