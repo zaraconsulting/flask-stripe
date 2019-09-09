@@ -1,11 +1,10 @@
 import smtplib, os
-from app import app
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from flask import render_template
+from flask import render_template, current_app
 
 def send_email(customer):
-  sender = app.config['ADMINS'][0]
+  sender = current_app.config['ADMINS'][0]
   recipient = customer['email']
 
   msg = MIMEMultipart('alternative')
@@ -16,9 +15,9 @@ def send_email(customer):
 
   html = MIMEText(render_template('/email/confirmation.html', **customer), 'html')
   msg.attach(html)
-  server = smtplib.SMTP(app.config.get('MAIL_SERVER'), app.config.get('MAIL_PORT'))
+  server = smtplib.SMTP(current_app.config.get('MAIL_SERVER'), current_app.config.get('MAIL_PORT'))
   server.ehlo()
   server.starttls()
-  server.login(app.config.get('MAIL_USERNAME'), app.config.get('MAIL_PASSWORD'))
-  server.sendmail(app.config['ADMINS'][0], recipient, msg.as_string())
+  server.login(current_app.config.get('MAIL_USERNAME'), current_app.config.get('MAIL_PASSWORD'))
+  server.sendmail(current_app.config['ADMINS'][0], recipient, msg.as_string())
   server.quit()

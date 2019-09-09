@@ -1,25 +1,31 @@
 from flask import Flask
-app = Flask(__name__)
-
 from config import Config
-app.config.from_object(Config)
-
 from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy(app)
-
 from flask_migrate import Migrate
-migrate = Migrate(app, db)
-
 from flask_admin import Admin
-admin = Admin(app)
 
-from flask_mail import Mail
-mail = Mail(app)
+db = SQLAlchemy()
+migrate = Migrate()
+admin = Admin()
 
-from app.blueprints.shop import shop
-app.register_blueprint(shop, url_prefix='/shop')
+def create_app(config_class=Config):
+  app = Flask(__name__)
+  app.config.from_object(config_class)
+  
+  db.init_app(app)
+  migrate.init_app(app, db)
 
-from app.blueprints.errors import errors
-app.register_blueprint(errors)
+  admin.init_app(app)
+  
+  from app.blueprints.shop import shop
+  app.register_blueprint(shop, url_prefix='/shop')
+  
+  from app.blueprints.errors import errors
+  app.register_blueprint(errors)
 
-from app import routes, models, errors
+  from app.blueprints.main import main
+  app.register_blueprint(main)
+
+  return app
+
+from app import models
