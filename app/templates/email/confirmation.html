@@ -4,8 +4,10 @@
 <p>We're processing your order. Thanks for shopping with us.</p>
 <!-- <p>Shipping & Handling: $x.XX</p>
 <p>Sales Tax: $X.XX</p> -->
-<p><strong>Order #: {{ order_no }}</strong></p>
-<p>Service: {{ description }}</p>
+<div><strong>Order #: {{ order_no }}</strong></div>
+<div><strong>Order date: {{ transactionDate }}</strong></div>
+<!-- <p>Service: {{ description }}</p> -->
+<hr>
 <p>
   {% for p in products %}
     <div>
@@ -21,7 +23,7 @@
 <p>
   <div>
     Total
-    <span style="float:right"><strong>Total: ${{ amount }}</strong></span>
+    <span style="float:right"><strong>${{ amount }}</strong></span>
   </div>
 </p>
 

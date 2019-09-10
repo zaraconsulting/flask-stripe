@@ -11,3 +11,4 @@ class Config:
   ADMINS = ['derek@zaraconsulting.org']
   MAIL_USERNAME = os.getenv('MAIL_USERNAME')
   MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+  BUSINESS_NAME = os.getenv('BUSINESS_NAME')

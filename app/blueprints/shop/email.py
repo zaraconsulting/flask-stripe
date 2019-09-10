@@ -8,7 +8,7 @@ def send_email(customer):
   recipient = customer['email']
 
   msg = MIMEMultipart('alternative')
-  msg['subject'] = "Order Confirmation"
+  msg['subject'] = f"Order Confirmation"
   msg['from'] = sender
   msg['to'] = recipient
   msg['reply-to'] = "noreply@zaraconsulting.org"

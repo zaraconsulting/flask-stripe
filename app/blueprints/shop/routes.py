@@ -5,6 +5,7 @@ import json, stripe, os
 from collections import Counter
 from app.blueprints.shop import shop
 from app.blueprints.main import main
+from datetime import datetime
 
 stripe.api_key = os.getenv('STRIPE_TEST_SECRET')
 
@@ -100,7 +101,8 @@ def charge():
       description=charge.description,
       order_no=charge.id,
       cart=session['cart'],
-      products=products
+      products=products,
+      transactionDate=datetime.fromtimestamp(charge.created).strftime("%B %d, %Y")
     )
     # print(f'Customer: {customer}')
     # print(f'Charge: {charge}')
