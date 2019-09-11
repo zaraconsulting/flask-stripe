@@ -60,20 +60,54 @@
   </div>
   <div class="card-footer">
     <div class="coupon col-md-5 col-sm-5 no-padding-left pull-left">
-      <div class="row">
-        <div class="col-6">
-          <input type="text" class="form-control" placeholder="Coupon code">
+      <form action="{{ url_for('shop.useCoupon') }}" method="POST">
+        {{ form.hidden_tag() }}
+        <div class="row">
+          <div class="col-6">
+            {% if coupon %}
+            {{ form.entry(id="coupon-entry", class="form-control", placeholder="Coupon code", readonly=True) }}
+            {% else %}
+              {{ form.entry(id="coupon-entry", class="form-control", placeholder="Coupon code") }}
+            {% endif %}
+          </div>
+          <div class="col-6">
+            {% if coupon %}
+              <a class="btn btn-outline-dark" href="{{ url_for('shop.removeCoupon') }}">Remove coupon</a>
+            {% else %}
+              {{ form.submit(class="btn btn-outline-dark") }}
+            {% endif %}
+          </div>
         </div>
-        <div class="col-6">
-          <input type="submit" class="btn btn-outline-dark" value="Use Coupon">
+      </form>
+      <div class="row">
+        <div class="col-md-6">
+          <div style="margin: 5px 0">
+            Tax: <b class="float-right">{{ tax }}%</b>
+          </div>
+        </div>
+      </div>
+      {% if coupon %}
+      <div class="row">
+        <div class="col-md-6">
+          <div style="margin: 5px 0; color: red;">
+            Discount: <span class="float-right">- {{ coupon }}%</span>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <div class="row">
+        <div class="col-md-6">
+          <div style="margin: 5px 0">
+            Subtotal: <b class="float-right">{{ "${:,.2f}".format(total) }}</b>
+          </div>
         </div>
       </div>
       <div class="row">
         <div class="col-md-6">
-          <button id="checkout-button" type="button" class="btn btn-success" style="margin: 10px 0">Checkout</button>
           <div style="margin: 5px 0">
-            Total price: <b>{{ "${:,.2f}".format(cartTotal) }}</b>
+            Total: <b  class="float-right">{{ "${:,.2f}".format(grandTotal) }}</b>
           </div>
+          <button id="checkout-button" type="button" class="btn btn-success" style="margin: 10px 0">Checkout</button>
         </div>
       </div>
     </div>

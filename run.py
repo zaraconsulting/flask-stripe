@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import Product
+from app.models import Product, Coupon
 
 app = create_app()
 
@@ -7,5 +7,6 @@ app = create_app()
 def make_shell_context():
   return dict(
     db=db, 
-    Product=Product
+    Product=Product,
+    Coupon=Coupon
   )

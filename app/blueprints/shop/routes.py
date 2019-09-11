@@ -6,48 +6,65 @@ from collections import Counter
 from app.blueprints.shop import shop
 from app.blueprints.main import main
 from datetime import datetime
+from app.models import Coupon
+from app.blueprints.shop.forms import CouponForm
 
 stripe.api_key = os.getenv('STRIPE_TEST_SECRET')
 
 @shop.context_processor
 def get_globals():
-  if 'cart' not in session:
+  if 'cart' not in session or len(session['cart']) == 0:
     session['cart'] = list()
+    session['subTotal'] = 0
   return dict(
     cartSession=session['cart'],
-    Counter=Counter
   )
 
 @shop.route('/')
 def index():
-  if 'cart' not in session:
+  """
+  [GET] /shop
+  """
+  if 'cart' not in session or len(session['cart']) == 0:
     session['cart'] = list()
-    redirect(url_for('main.index'))
-  products = list()
+    session['subTotal'] = 0
+
+  form = CouponForm()
+
+  # initialize products
+  products = []
   for i in session['cart']:
     if i not in products:
       products.append(i)
 
-  sum_ = 0
-  for i in session['cart']:
-    sum_+=i['price']
+  tax = current_app.config.get('PROCESSING_FEE')
+
   c = {
     'products': products,
     'cart': session['cart'],
-    'cartTotal': sum_,
+    'total': session['subTotal'],
+    'grandTotal': (session['subTotal'] * tax) + session['subTotal'],
     'key': os.getenv('STRIPE_TEST_PUB'),
     'amount': int(sum([i['price'] for i in session['cart']])*100),
-    'jsonCart': [json.dumps(i) for i in session['cart']]
+    'form': form,
+    'tax': tax * 100,
+    'coupon': int(request.args.get('coupon', float())),
+    'couponName': request.args.get('couponName', str()),
   }
   return render_template('shop/cart.html', **c)
 
 @shop.route('/add/<int:id>')
 def add(id):
-  p = Product.query.get(id)
+  """
+  [GET] /shop/add/<id>
+  """
   if 'cart' not in session:
-    session['cart'] = []
-  cart = session['cart']
-  cart.append(
+    session['cart'] = list()
+    session['subTotal'] = 0
+
+  p = Product.query.get(id)
+  
+  session['cart'].append(
     {
       'id': p.id,
       'prod_id': p.prod_id,
@@ -57,22 +74,35 @@ def add(id):
       'image': p.image
     }
   )
-  session['cart'] = cart
+  
+  # calculate subtotal
+  session['subTotal'] = 0
+  for i in session['cart']:
+    session['subTotal']+=i['price']
   return redirect(url_for('main.index'))
 
 @shop.route('/remove/<int:id>')
 def remove(id):
+  """
+  [GET] /shop/remove/<id>
+  """
   p = Product.query.get(id)
   cart = session['cart']
   for i in cart:
     if p.name in i['name']:
       cart.remove(i)
       break
+  session['subTotal'] = 0
+  for i in cart:
+    session['subTotal']+=i['price']
   session['cart'] = cart
   return redirect(url_for('shop.index'))
 
 @shop.route('/charge', methods=['POST'])
 def charge():
+  """
+  [GET] /shop/charge
+  """
   try:
     customer = stripe.Customer.create(
       email=request.json['email'],
@@ -97,12 +127,15 @@ def charge():
     customerInfo = dict(
       id=customer.id,
       email=customer.email,
-      amount=f'{amount/100:.2f}',
       description=charge.description,
       order_no=charge.id,
       cart=session['cart'],
       products=products,
-      transactionDate=datetime.fromtimestamp(charge.created).strftime("%B %d, %Y")
+      transactionDate=datetime.fromtimestamp(charge.created).strftime("%B %d, %Y"),
+      tax=current_app.config.get('PROCESSING_FEE') * 100,
+      subtotal=session['subTotal'],
+      grandTotal=(session['subTotal'] * current_app.config.get('PROCESSING_FEE')) + session['subTotal'],
+      coupon=int(session['coupon'])
     )
     # print(f'Customer: {customer}')
     # print(f'Charge: {charge}')
@@ -114,9 +147,34 @@ def charge():
 
 @shop.route('/thankyou')
 def thankyou():
+  """
+  [GET] /shop/thankyou
+  """
   return render_template('shop/checkout.html')
 
 @shop.route('/clear')
 def clear():
+  """
+  [GET] /shop/clear
+  """
   session.clear()
+  return redirect(url_for('shop.index'))
+
+@shop.route('/coupon/add', methods=['POST'])
+def useCoupon():
+  form = CouponForm()
+  session['originalSubTotal'] = session['subTotal']
+  if form.validate_on_submit():
+    coupon = Coupon.query.filter_by(code=form.entry.data).first()
+    if not coupon:
+      return redirect(url_for('shop.index'))
+    session['subTotal'] = session['subTotal'] - (session['subTotal'] * float(coupon.value / 100))
+  session['coupon'] = coupon.value
+  return redirect(url_for('shop.index', coupon=int(coupon.value), couponName=coupon.code))
+
+@shop.route('/coupon/remove')
+def removeCoupon():
+  session['subTotal'] = 0
+  for i in session['cart']:
+    session['subTotal']+=i['price']
   return redirect(url_for('shop.index'))

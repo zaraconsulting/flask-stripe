@@ -5,15 +5,22 @@ from collections import Counter
 
 @main.context_processor
 def get_globals():
-  if 'cart' not in session:
+  if 'cart' not in session or len(session['cart']) == 0:
     session['cart'] = list()
+    session['subTotal'] = 0
   return dict(
     cartSession=session['cart'],
-    Counter=Counter
   )
 
 @main.route('/')
 def index():
+  """
+  [GET] /
+  """
+  if 'cart' not in session:
+    session['cart'] = list()
+    session['subTotal'] = 0
+
   c = {
     'products': Product.query.all()
   }
