@@ -37,7 +37,7 @@ def index():
     if i not in products:
       products.append(i)
 
-  tax = current_app.config.get('PROCESSING_FEE')
+  tax = float(current_app.config.get('PROCESSING_FEE'))
 
   c = {
     'products': products,
@@ -68,7 +68,6 @@ def add(id):
     {
       'id': p.id,
       'prod_id': p.prod_id,
-      'sku': p.sku,
       'name': p.name,
       'price': p.price,
       'image': p.image
@@ -104,18 +103,18 @@ def charge():
   [GET] /shop/charge
   """
   try:
-    customer = stripe.Customer.create(
-      email=request.json['email'],
-      source=request.json['token']
-    )
-    amount = int(sum([i['price'] for i in session['cart']])*100)
-    
+    # Build product dictionaries from Session cart 
     products = list()
     productDict = dict()
     for i in session['cart']:
       if i not in products:
         products.append(i)
         productDict[i['prod_id']] = f"Name: {i['name']}; Quantity: {session['cart'].count(i)};"
+      
+    # Create Stripe customer object
+    customer = stripe.Customer.create(email=request.json['email'], source=request.json['token'])
+    
+    # Create Stripe charge object
     charge = stripe.Charge.create(
       customer=customer.id,
       amount=request.json['amount'],
@@ -124,6 +123,7 @@ def charge():
       metadata=productDict
     )
 
+    # Build Customer Order Information object
     customerInfo = dict(
       id=customer.id,
       email=customer.email,
@@ -137,10 +137,9 @@ def charge():
       grandTotal=(session['subTotal'] * current_app.config.get('PROCESSING_FEE')) + session['subTotal'],
       coupon=int(session['coupon'])
     )
-    # print(f'Customer: {customer}')
-    # print(f'Charge: {charge}')
-    send_email(customerInfo)
-    session.clear()
+
+    send_email(customerInfo) # Send confirmation email
+    session.clear() # clear Session cart
     return jsonify({'success': 'success!'})
   except stripe.error.StripeError:
     return jsonify({'status': 'error'}), 500

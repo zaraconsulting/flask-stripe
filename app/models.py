@@ -7,7 +7,6 @@ import uuid
 class Product(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   prod_id = db.Column(db.String(50))
-  sku = db.Column(db.String(50))
   name = db.Column(db.String(50), index=True)
   image = db.Column(db.String(100), nullable=True)
   price = db.Column(db.Float, index=True)
@@ -17,12 +16,12 @@ class Product(db.Model):
 
 class Coupon(db.Model):
   id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(UUID(as_uuid=True), unique=True, default=str(uuid.uuid4()), nullable=False)
+  uuid = db.Column(db.String(10), unique=True, default=str(uuid.uuid4())[:8])
   code = db.Column(db.String(10), nullable=False)
   value = db.Column(db.Float(), nullable=True)
 
   def __repr__(self):
-    return f'<self.code>'
+    return f'<{self.code}>'
 
 class CouponView(ModelView):
   form_widget_args = {
