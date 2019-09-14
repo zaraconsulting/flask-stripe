@@ -6,7 +6,7 @@ from flask_admin import Admin
 
 db = SQLAlchemy()
 migrate = Migrate()
-admin = Admin()
+admin = Admin(name="Flask Shopping Cart")
 
 def create_app(config_class=Config):
   app = Flask(__name__)
@@ -15,6 +15,7 @@ def create_app(config_class=Config):
   db.init_app(app)
   migrate.init_app(app, db)
 
+  app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
   admin.init_app(app)
   
   from app.blueprints.shop import shop

@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, session, request, jsonify, current_app
-from app.models import Product
+# from app.models import Product
 from app.blueprints.shop.email import send_email
 import json, stripe, os
 from collections import Counter
@@ -37,7 +37,7 @@ def index():
     if i not in products:
       products.append(i)
 
-  tax = float(current_app.config.get('PROCESSING_FEE'))
+  tax = current_app.config.get('PROCESSING_FEE')
 
   c = {
     'products': products,
@@ -53,7 +53,7 @@ def index():
   }
   return render_template('shop/cart.html', **c)
 
-@shop.route('/add/<int:id>')
+@shop.route('/add/<id>')
 def add(id):
   """
   [GET] /shop/add/<id>
@@ -62,15 +62,14 @@ def add(id):
     session['cart'] = list()
     session['subTotal'] = 0
 
-  p = Product.query.get(id)
+  p = stripe.Product.retrieve(id)
   
   session['cart'].append(
     {
       'id': p.id,
-      'prod_id': p.prod_id,
       'name': p.name,
-      'price': p.price,
-      'image': p.image
+      'price': float(p.metadata.price),
+      'image': p.images[0]
     }
   )
   
@@ -80,12 +79,12 @@ def add(id):
     session['subTotal']+=i['price']
   return redirect(url_for('main.index'))
 
-@shop.route('/remove/<int:id>')
+@shop.route('/remove/<id>')
 def remove(id):
   """
   [GET] /shop/remove/<id>
   """
-  p = Product.query.get(id)
+  p = stripe.Product.retrieve(id)
   cart = session['cart']
   for i in cart:
     if p.name in i['name']:
@@ -109,7 +108,7 @@ def charge():
     for i in session['cart']:
       if i not in products:
         products.append(i)
-        productDict[i['prod_id']] = f"Name: {i['name']}; Quantity: {session['cart'].count(i)};"
+        productDict[i['id']] = f"Name: {i['name']}; Quantity: {session['cart'].count(i)};"
       
     # Create Stripe customer object
     customer = stripe.Customer.create(email=request.json['email'], source=request.json['token'])
@@ -134,7 +133,7 @@ def charge():
       transactionDate=datetime.fromtimestamp(charge.created).strftime("%B %d, %Y"),
       tax=current_app.config.get('PROCESSING_FEE') * 100,
       subtotal=session['subTotal'],
-      grandTotal=(session['subTotal'] * current_app.config.get('PROCESSING_FEE')) + session['subTotal'],
+      grandTotal=(session['subTotal'] * current_app.config.get('PROCESSING_FEE') * 100) + session['subTotal'],
       coupon=int(session['coupon'])
     )
 

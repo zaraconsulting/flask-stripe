@@ -2,6 +2,7 @@ from flask import render_template, redirect, url_for, current_app, session
 from app.models import Product
 from app.blueprints.main import main
 from collections import Counter
+import stripe
 
 @main.context_processor
 def get_globals():
@@ -22,6 +23,6 @@ def index():
     session['subTotal'] = 0
 
   c = {
-    'products': Product.query.all()
+    'products': stripe.Product.list()
   }
   return render_template('index.html', **c)

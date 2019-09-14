@@ -15,4 +15,5 @@ class Config:
   MAIL_USERNAME = os.getenv('MAIL_USERNAME') or os.environ.get('MAIL_USERNAME')
   MAIL_PASSWORD = os.getenv('MAIL_PASSWORD') or os.environ.get('MAIL_PASSWORD')
   BUSINESS_NAME = os.getenv('BUSINESS_NAME') or os.environ.get('BUSINESS_NAME')
-  PROCESSING_FEE = os.getenv('PROCESSING_FEE') or os.environ.get('PROCESSING_FEE')
+  PROCESSING_FEE = float(os.getenv('PROCESSING_FEE')) or float(os.environ.get('PROCESSING_FEE'))
+  STRIPE_TEST_SECRET = os.getenv('STRIPE_TEST_SECRET') or  os.environ.get('STRIPE_TEST_SECRET')
