@@ -11,6 +11,9 @@ from app.blueprints.shop.forms import CouponForm
 
 stripe.api_key = os.getenv('STRIPE_TEST_SECRET')
 
+def getUSD(amount):
+  return round(amount, 2)
+
 @shop.context_processor
 def get_globals():
   if 'cart' not in session or len(session['cart']) == 0:
@@ -42,12 +45,12 @@ def index():
   c = {
     'products': products,
     'cart': session['cart'],
-    'total': sum([i['price'] for i in session['cart']]),
-    'grandTotal': (session['subTotal'] * tax) + session['subTotal'],
+    'subTotal': getUSD(sum([i['price'] for i in session['cart']])),
+    'grandTotal': getUSD((session['subTotal'] * tax) + session['subTotal']),
     'key': os.getenv('STRIPE_TEST_PUB'),
-    'amount': int(((session['subTotal'] * tax) + session['subTotal']) * 100),
+    'amount': int(getUSD((session['subTotal'] * tax) + session['subTotal']) * 100),
     'form': form,
-    'tax': sum([i['price'] for i in session['cart']]) * tax,
+    'tax': getUSD(sum([i['price'] for i in session['cart']]) * tax),
     'coupon': int(request.args.get('coupon', float())),
     'couponName': request.args.get('couponName', str()),
   }
