@@ -42,12 +42,12 @@ def index():
   c = {
     'products': products,
     'cart': session['cart'],
-    'total': session['subTotal'],
+    'total': sum([i['price'] for i in session['cart']]),
     'grandTotal': (session['subTotal'] * tax) + session['subTotal'],
     'key': os.getenv('STRIPE_TEST_PUB'),
-    'amount': int(sum([i['price'] for i in session['cart']])*100),
+    'amount': int(((session['subTotal'] * tax) + session['subTotal']) * 100),
     'form': form,
-    'tax': tax * 100,
+    'tax': sum([i['price'] for i in session['cart']]) * tax,
     'coupon': int(request.args.get('coupon', float())),
     'couponName': request.args.get('couponName', str()),
   }
@@ -131,11 +131,12 @@ def charge():
       cart=session['cart'],
       products=products,
       transactionDate=datetime.fromtimestamp(charge.created).strftime("%B %d, %Y"),
-      tax=current_app.config.get('PROCESSING_FEE') * 100,
-      subtotal=session['subTotal'],
-      grandTotal=(session['subTotal'] * current_app.config.get('PROCESSING_FEE') * 100) + session['subTotal'],
-      coupon=int(session['coupon'])
+      tax=sum([i['price'] for i in session['cart']]) * current_app.config.get('PROCESSING_FEE'),
+      subtotal=sum([i['price'] for i in session['cart']]),
+      grandTotal=(session['subTotal'] * current_app.config.get('PROCESSING_FEE')) + session['subTotal'],
     )
+    if 'coupon' in session:
+      customerInfo['coupon']=int(session['coupon'])
 
     send_email(customerInfo) # Send confirmation email
     session.clear() # clear Session cart

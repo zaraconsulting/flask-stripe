@@ -22,17 +22,19 @@
   </p>
 <p>
   <div>
-    Tax
-    <span style="float:right;"><strong>{{ tax }}%</strong></span>
-  </div>
-  <div>
-    Discount
-    <span style="float:right; color:red;"><strong>- {{ coupon }}%</strong></span>
-  </div>
-  <div>
     Subtotal
     <span style="float:right;"><strong>${{ "{:,.2f}".format(subtotal) }}</strong></span>
   </div>
+  <div>
+    Tax
+    <span style="float:right;"><strong>{{ "${:,.2f}".format(tax) }}</strong></span>
+  </div>
+  {% if coupon %}
+    <div>
+      Discount
+      <span style="float:right; color:red;"><strong>- {{ coupon }}%</strong></span>
+    </div>
+  {% endif %}
   <div>
     Total
     <span style="float:right;"><strong>${{ "{:,.2f}".format(grandTotal) }}</strong></span>

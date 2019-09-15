@@ -82,7 +82,14 @@
       <div class="row">
         <div class="col-md-6">
           <div style="margin: 5px 0">
-            Tax: <b class="float-right">{{ tax }}%</b>
+            Subtotal: <b class="float-right">{{ "${:,.2f}".format(total) }}</b>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div style="margin: 5px 0">
+            Tax: <b class="float-right">{{ "${:,.2f}".format(tax) }}</b>
           </div>
         </div>
       </div>
@@ -95,13 +102,6 @@
         </div>
       </div>
       {% endif %}
-      <div class="row">
-        <div class="col-md-6">
-          <div style="margin: 5px 0">
-            Subtotal: <b class="float-right">{{ "${:,.2f}".format(total) }}</b>
-          </div>
-        </div>
-      </div>
       <div class="row">
         <div class="col-md-6">
           <div style="margin: 5px 0">
@@ -122,8 +122,6 @@
   <script>
     var stripe = Stripe('{{ key }}');
     var cartSession = '{{ cartSession }}'
-    // console.log(cartSession)
-
     var handler = StripeCheckout.configure({
       key: "{{ key }}",
       image: "{{ url_for('static', filename='images/4.png') }}",
@@ -150,8 +148,6 @@
         .then(data => {
           sessionStorage.removeItem('cart');
           window.location.href = "/shop/thankyou";
-          // $('.alert-message').text('Thanks for purchasing!');
-          // $('#status').css('display', 'inline');
         })
         .catch(err => {
           $('.alert-message').text('Something went wrong.');
@@ -161,18 +157,10 @@
     });
 
     $('#checkout-button').on('click', (e) => {
-      
-      // stripe.redirectToCheckout({
-        
-        // items: [{
-        //   sku: '',
-        //   quantity: 
-        // }]
-      // })
       handler.open({
         name: "Zara Consulting, Inc.",
         description: "Goods & Services",
-        amount: "{{ amount }}",
+        amount: '{{ amount }}',
       })
       e.preventDefault();
     });
