@@ -50,7 +50,7 @@ class ProductView(ModelView):
       sku = stripe.SKU.create(
         product=product.id,
         attributes={'name': product.name},
-        price=int(form.price.data)*100,
+        price=int(form.price.data * 100),
         currency='usd',
         image=product.images[0],
         inventory={'type': 'infinite'}
@@ -61,7 +61,7 @@ class ProductView(ModelView):
         id_=product.id,
         name=product.name,
         image=product.images[0],
-        price=float(sku.price)/100,
+        price=form.price.data,
         active=product.active,
         created=datetime.fromtimestamp(product.created),
         description=product.description,
@@ -88,7 +88,7 @@ class ProductView(ModelView):
       sku = stripe.SKU.modify(
         sid,
         image = form.image.data,
-        price = int(form.price.data)*100
+        price = int(form.price.data * 100)
       )
 
       # Update Stripe Product information
@@ -102,7 +102,7 @@ class ProductView(ModelView):
       # Update database Product model
       model.name = product.name
       model.image = sku.image
-      model.price = sku.price
+      model.price = form.price.data
       model.description = product.description
       db.session.commit()
     
