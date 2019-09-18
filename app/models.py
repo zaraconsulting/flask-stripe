@@ -1,5 +1,7 @@
 from app import db, admin
 from flask_admin import form
+from flask_admin.actions import action
+from flask_admin.babel import gettext, ngettext, lazy_gettext
 from flask_admin.contrib.sqla import ModelView
 from sqlalchemy.dialects.postgresql import UUID
 import uuid, os, stripe
@@ -9,8 +11,9 @@ stripe.api_key = os.getenv('STRIPE_TEST_SECRET')
 
 class Product(db.Model):
   id_ = db.Column(db.String, primary_key=True)
-  name = db.Column(db.String(50), index=True, nullable=False)
-  image = db.Column(db.String(100), nullable=True)
+  sku = db.Column(db.String)
+  name = db.Column(db.String, index=True, nullable=False)
+  image = db.Column(db.String, nullable=True)
   price = db.Column(db.Float, index=True, nullable=False)
   active = db.Column(db.Boolean)
   created = db.Column(db.DateTime)
@@ -22,18 +25,21 @@ class Product(db.Model):
     return f'<Product: {self.name} | {self.price}>'
 
 class Coupon(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(db.String(10), unique=True, default=str(uuid.uuid4())[:8])
-  code = db.Column(db.String(10), nullable=False)
-  value = db.Column(db.Float, nullable=True)
+  id_ = db.Column(db.String, primary_key=True)
+  name = db.Column(db.String, nullable=False)
+  duration = db.Column(db.String, nullable=False)
+  duration_in_months = db.Column(db.Integer)
+  created = db.Column(db.DateTime)
+  percent_off = db.Column(db.Float)
+  object_ = db.Column(db.String)
 
   def __repr__(self):
-    return f'<{self.code}>'
+    return f'<{self.id_}> | <{self.name}>'
 
 class ProductView(ModelView):
   # page_size = 10
-  form_excluded_columns = ('created', 'object_', 'url', 'active')
-  column_exclude_list = ('url', 'description')
+  form_excluded_columns = ('sku', 'created', 'object_', 'url', 'active')
+  column_exclude_list = ('url', 'description', 'object_')
 
   def create_model(self, form):
     try:
@@ -59,6 +65,7 @@ class ProductView(ModelView):
       # Create database product
       p = Product(
         id_=product.id,
+        sku=sku.id,
         name=product.name,
         image=product.images[0],
         price=form.price.data,
@@ -80,13 +87,9 @@ class ProductView(ModelView):
 
   def update_model(self, form, model):
     try:
-      for i in stripe.SKU.list():
-        if i.product == model.id_:
-          sid = i.id
-
       # Update Stripe SKU information
       sku = stripe.SKU.modify(
-        sid,
+        model.sku,
         image = form.image.data,
         price = int(form.price.data * 100)
       )
@@ -118,9 +121,7 @@ class ProductView(ModelView):
   def delete_model(self, model):
     try:
       # Delete SKU from Stripe (must be done before deleting product)
-      for i in stripe.SKU.list():
-        if i.product == model.id_:
-          stripe.SKU.delete(i.id)
+      stripe.SKU.delete(model.sku)
       
       # Delete product from Stripe
       stripe.Product.delete(model.id_)
@@ -136,11 +137,108 @@ class ProductView(ModelView):
       self.session.rollback()
       return False
     return True
+  
+  @action('delete', lazy_gettext('Delete'), lazy_gettext('Are you sure you want to delete selected records?'))
+  def action_delete(self, ids):
+    try:
+      count = 0
+      for i in Product.query.all():
+        count+=1
+        db.session.delete(i)
+      db.session.commit()
+      flash(ngettext('Record was successfully deleted.', '%(count)s records were successfully deleted.', count, count=count), 'success')
+    except Exception as ex:
+      if not self.handle_view_exception(ex):
+        raise
+    flash(gettext('Failed to delete records. %(error)s', error=str(ex)), 'error')
 
 class CouponView(ModelView):
-  form_widget_args = {
-    'uuid': { 'disabled': True }
-  }
+  column_exclude_list = ('object_', 'created')
+  form_excluded_columns = ('object_', 'created')
+  
+  def on_form_prefill(self, form, id):
+    form.duration.render_kw = {'readonly': True}
+    form.duration_in_months.render_kw = {'readonly': True}
+    form.percent_off.render_kw = {'readonly': True}
+
+
+  def create_model(self, form):
+    try:
+      coupon = stripe.Coupon.create(
+        name=form.name.data,
+        duration=form.duration.data,
+        duration_in_months=form.duration_in_months.data,
+        percent_off=form.percent_off.data
+      )
+
+      c = Coupon(
+        id_=coupon.id,
+        name=coupon.name,
+        duration=coupon.duration,
+        duration_in_months=coupon.duration_in_months,
+        percent_off=coupon.percent_off,
+        created=datetime.fromtimestamp(coupon.created),
+        object_=coupon.object
+      )
+      db.session.add(c)
+      db.session.commit()
+    except Exception as ex:
+      if not self.handle_view_exception(ex):
+        flash(gettext('Failed to create record. %(error)s', error=str(ex)), 'error')
+        log.exception('Failed to create record.')
+      self.session.rollback()
+      return False
+    return self.render('admin/model/create.html', form=form)
+
+  def update_model(self, form, model):
+    try:
+      # Update Stripe Coupon information
+      coupon = stripe.Coupon.modify(
+        model.id_,
+        name=form.name.data
+      )
+
+      # Update database Coupon model
+      model.name = coupon.name
+      db.session.commit()
+    
+    except Exception as ex:
+      if not self.handle_view_exception(ex):
+        flash(gettext('Failed to update record. %(error)s', error=str(ex)), 'error')
+        log.exception('Failed to update record.')
+      self.session.rollback()
+      return False
+    return True
+
+  def delete_model(self, model):
+    try:
+      stripe.Coupon.delete(model.name)
+
+      # Delete from database
+      db.session.delete(model)
+      db.session.commit()
+
+    except Exception as ex:
+      if not self.handle_view_exception(ex):
+        flash(gettext('Failed to delete record. %(error)s', error=str(ex)), 'error')
+        log.exception('Failed to delete record.')
+      self.session.rollback()
+      return False
+    return True
+  
+  @action('delete', lazy_gettext('Delete'), lazy_gettext('Are you sure you want to delete selected records?'))
+  def action_delete(self, ids):
+    try:
+      count = 0
+      for i in Coupon.query.all():
+        count+=1
+        db.session.delete(i)
+      db.session.commit()
+      flash(ngettext('Record was successfully deleted.', '%(count)s records were successfully deleted.', count, count=count), 'success')
+    except Exception as ex:
+      if not self.handle_view_exception(ex):
+        raise
+    flash(gettext('Failed to delete records. %(error)s', error=str(ex)), 'error')
 
 admin.add_views(
   ProductView(Product, db.session),

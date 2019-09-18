@@ -72,6 +72,7 @@ def add(id):
       'id': p.id_,
       'name': p.name,
       'price': p.price,
+      'description': p.description,
       'image': p.image
     }
   )
