@@ -153,7 +153,7 @@ class ProductView(ModelView):
     flash(gettext('Failed to delete records. %(error)s', error=str(ex)), 'error')
 
 class CouponView(ModelView):
-  column_exclude_list = ('object_', 'created')
+  column_exclude_list = ('object_')
   form_excluded_columns = ('object_', 'created')
   
   def on_form_prefill(self, form, id):
