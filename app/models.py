@@ -79,24 +79,28 @@ class ProductView(ModelView):
     return self.render('admin/model/create.html', form=form)
   
   def delete_model(self, model):
-    print(model)
-  #   try:
-  #     self.on_model_delete(model)
-  #     self.session.flush()
-  #     self.session.delete(model)
-  #     self.session.commit()
+    try:
+      p = Product.query.filter_by(id_=model.id_).first()
 
-  #   except Exception as ex:
-  #     if not self.handle_view_exception(ex):
-  #       flash(gettext('Failed to delete record. %(error)s', error=str(ex)), 'error')
-  #       log.exception('Failed to delete record.')
-  #     self.session.rollback()
-  #     return False
-  #   else:
-  #     self.after_model_delete(model)
-  # return True
-  
+      # Delete SKU from Stripe (must be done before deleting product)
+      for i in stripe.SKU.list():
+        if i.product == p.id_:
+          stripe.SKU.delete(i.id)
+      
+      # Delete product from Stripe
+      stripe.Product.delete(p.id_)
 
+      # Delete from database
+      db.session.delete(p)
+      db.session.commit()
+
+    except Exception as ex:
+      if not self.handle_view_exception(ex):
+        flash(gettext('Failed to delete record. %(error)s', error=str(ex)), 'error')
+        log.exception('Failed to delete record.')
+      self.session.rollback()
+      return False
+    return True
 
 class CouponView(ModelView):
   form_widget_args = {
