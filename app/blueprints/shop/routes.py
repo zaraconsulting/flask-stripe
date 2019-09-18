@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, session, request, jsonify, current_app
-# from app.models import Product
+from app.models import Product
 from app.blueprints.shop.email import send_email
 import json, stripe, os
 from collections import Counter
@@ -59,20 +59,20 @@ def index():
 @shop.route('/add/<id>')
 def add(id):
   """
-  [GET] /shop/add/<id>
+  [GET] /shop/add/<str:id>
   """
   if 'cart' not in session:
     session['cart'] = list()
     session['subTotal'] = 0
 
-  p = stripe.Product.retrieve(id)
+  p = Product.query.filter_by(id_=id).first()
   
   session['cart'].append(
     {
-      'id': p.id,
+      'id': p.id_,
       'name': p.name,
-      'price': float(p.metadata.price),
-      'image': p.images[0]
+      'price': p.price,
+      'image': p.image
     }
   )
   

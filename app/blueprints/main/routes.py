@@ -23,6 +23,6 @@ def index():
     session['subTotal'] = 0
 
   c = {
-    'products': stripe.Product.list()
+    'products': Product.query.all()
   }
   return render_template('index.html', **c)

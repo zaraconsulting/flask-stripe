@@ -14,11 +14,11 @@
   <div class="col-md-4">
     <div class="card-deck">
       <div class="card">
-        <img class="card-img-top" src="{{ p.images[0] }}" alt="{{ p.name }}">
+        <img class="card-img-top" src="{{ p.image }}" alt="{{ p.name }}">
         <div class="card-body">
           <h4 class="card-title">{{ p.name }}</h4>
-          <p class="card-text">${{ p.metadata.price }}</p>
-          <a href="/shop/add/{{ p.id }}" class="btn btn-block btn-outline-dark">Add to Cart</a>
+          <p class="card-text">{{ "${:,.2f}".format(p.price) }}</p>
+          <a href="/shop/add/{{ p.id_ }}" class="btn btn-block btn-outline-dark">Add to Cart</a>
         </div>
       </div>
     </div>
