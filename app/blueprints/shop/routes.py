@@ -168,12 +168,12 @@ def useCoupon():
   form = CouponForm()
   session['originalSubTotal'] = session['subTotal']
   if form.validate_on_submit():
-    coupon = Coupon.query.filter_by(code=form.entry.data).first()
+    coupon = Coupon.query.filter_by(name=form.entry.data).first()
     if not coupon:
       return redirect(url_for('shop.index'))
-    session['subTotal'] = session['subTotal'] - (session['subTotal'] * float(coupon.value / 100))
-  session['coupon'] = coupon.value
-  return redirect(url_for('shop.index', coupon=int(coupon.value), couponName=coupon.code))
+    session['subTotal'] = session['subTotal'] - (session['subTotal'] * float(coupon.percent_off / 100))
+  session['coupon'] = coupon.percent_off
+  return redirect(url_for('shop.index', coupon=int(coupon.percent_off), couponName=coupon.name))
 
 @shop.route('/coupon/remove')
 def removeCoupon():
