@@ -17,6 +17,8 @@ def create_app(config_class=Config):
 
   app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
   admin.init_app(app)
+  with app.app_context():
+    from app.blueprints.admin import models
   
   from app.blueprints.shop import shop
   app.register_blueprint(shop, url_prefix='/shop')

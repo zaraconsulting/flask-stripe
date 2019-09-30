@@ -1,4 +1,3 @@
-from app.models import Coupon
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 

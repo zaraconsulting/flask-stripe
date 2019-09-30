@@ -23,6 +23,6 @@ def index():
     session['subTotal'] = 0
 
   c = {
-    'products': Product.query.all()
+    'products': [i for i in Product.query.all() if i.active]
   }
   return render_template('index.html', **c)

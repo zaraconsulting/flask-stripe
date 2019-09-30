@@ -17,3 +17,9 @@ class Config:
   BUSINESS_NAME = os.getenv('BUSINESS_NAME') or os.environ.get('BUSINESS_NAME')
   PROCESSING_FEE = float(os.getenv('PROCESSING_FEE')) or float(os.environ.get('PROCESSING_FEE'))
   STRIPE_TEST_SECRET = os.getenv('STRIPE_TEST_SECRET') or  os.environ.get('STRIPE_TEST_SECRET')
+  S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME') or os.environ.get('S3_BUCKET_NAME')
+  AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID') or os.environ.get('AWS_ACCESS_KEY_ID')
+  AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY') or os.environ.get('AWS_SECRET_ACCESS_KEY')
+  S3_BASE_LOCATION = f"https://{os.getenv('S3_BUCKET_NAME')}.s3.us-east-2.amazonaws.com/" or f"https://{os.environ.get('S3_BUCKET_NAME')}.s3.us-east-2.amazonaws.com/"
+  S3_RELATIVE_URL_PATH = os.getenv('S3_RELATIVE_URL_PATH') or os.environ.get('S3_RELATIVE_URL_PATH')
+  
